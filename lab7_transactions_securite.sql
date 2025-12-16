@@ -1,6 +1,6 @@
 
 
--- 1️-Création de la base et de la table
+--  -Création de la base et de la table
 CREATE DATABASE IF NOT EXISTS banque_demo
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
