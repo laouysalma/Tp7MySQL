@@ -1,0 +1,132 @@
+MariaDB [(none)]> CREATE DATABASE banque_demo
+    ->   CHARACTER SET utf8mb4
+    ->   COLLATE utf8mb4_unicode_ci;
+Query OK, 1 row affected (0.003 sec)
+
+MariaDB [(none)]> USE banque_demo;
+Database changed
+MariaDB [banque_demo]> CREATE TABLE compte (
+    ->   id          INT AUTO_INCREMENT PRIMARY KEY,
+    ->   titulaire   VARCHAR(100) NOT NULL,
+    ->   solde       DECIMAL(10,2) NOT NULL DEFAULT 0.00
+    -> ) ENGINE=InnoDB;
+Query OK, 0 rows affected (0.135 sec)
+
+MariaDB [banque_demo]> SHOW CREATE TABLE compte\G
+*************************** 1. row ***************************
+       Table: compte
+Create Table: CREATE TABLE `compte` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `titulaire` varchar(100) NOT NULL,
+  `solde` decimal(10,2) NOT NULL DEFAULT 0.00,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+1 row in set (0.001 sec)
+
+MariaDB [banque_demo]> INSERT INTO compte (titulaire, solde) VALUES
+    ->   ('Alice', 1000.00),
+    ->   ('Bob',   500.00);
+Query OK, 2 rows affected (0.038 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+MariaDB [banque_demo]> SELECT * FROM compte;
++----+-----------+---------+
+| id | titulaire | solde   |
++----+-----------+---------+
+|  1 | Alice     | 1000.00 |
+|  2 | Bob       |  500.00 |
++----+-----------+---------+
+2 rows in set (0.001 sec)
+
+MariaDB [banque_demo]> START TRANSACTION;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [banque_demo]> UPDATE compte SET solde = solde - 200.00 WHERE titulaire = 'Alice';
+Query OK, 1 row affected (0.026 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [banque_demo]> UPDATE compte SET solde = solde + 200.00 WHERE titulaire = 'Bob';
+Query OK, 1 row affected (0.000 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [banque_demo]> COMMIT;
+Query OK, 0 rows affected (0.036 sec)
+
+MariaDB [banque_demo]> SELECT * FROM compte;
++----+-----------+--------+
+| id | titulaire | solde  |
++----+-----------+--------+
+|  1 | Alice     | 800.00 |
+|  2 | Bob       | 700.00 |
++----+-----------+--------+
+2 rows in set (0.000 sec)
+
+MariaDB [banque_demo]> START TRANSACTION;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [banque_demo]> UPDATE compte SET solde = solde - 2000.00 WHERE titulaire = 'Alice';
+Query OK, 1 row affected (0.001 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [banque_demo]> UPDATE compte SET solde = solde + 2000.00 WHERE titulaire = 'Bob';
+Query OK, 1 row affected (0.001 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [banque_demo]> ROLLBACK;
+Query OK, 0 rows affected (0.028 sec)
+
+MariaDB [banque_demo]> SELECT * FROM compte;
++----+-----------+--------+
+| id | titulaire | solde  |
++----+-----------+--------+
+|  1 | Alice     | 800.00 |
+|  2 | Bob       | 700.00 |
++----+-----------+--------+
+2 rows in set (0.000 sec)
+
+MariaDB [banque_demo]> SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+Query OK, 0 rows affected (0.002 sec)
+
+MariaDB [banque_demo]> START TRANSACTION;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [banque_demo]> SELECT solde FROM compte WHERE titulaire = 'Alice';  -- Lecture initiale
++--------+
+| solde  |
++--------+
+| 800.00 |
++--------+
+1 row in set (0.001 sec)
+
+MariaDB [banque_demo]> SELECT solde FROM compte WHERE titulaire = 'Alice';  -- R‚sultat diff‚rent selon isolation
++--------+
+| solde  |
++--------+
+| 800.00 |
++--------+
+1 row in set (0.000 sec)
+
+MariaDB [banque_demo]> SELECT solde FROM compte WHERE titulaire = 'Alice';
++--------+
+| solde  |
++--------+
+| 900.00 |
++--------+
+1 row in set (0.000 sec)
+
+MariaDB [banque_demo]> START TRANSACTION;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [banque_demo]> SELECT * FROM compte
+    -> WHERE titulaire = 'Alice'
+    -> FOR UPDATE;
++----+-----------+--------+
+| id | titulaire | solde  |
++----+-----------+--------+
+|  1 | Alice     | 900.00 |
++----+-----------+--------+
+1 row in set (0.000 sec)
+
+MariaDB [banque_demo]> COMMIT;
+Query OK, 0 rows affected (0.000 sec)
+

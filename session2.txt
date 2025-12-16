@@ -1,0 +1,40 @@
+MariaDB [(none)]> UPDATE compte SET solde = solde + 100.00 WHERE titulaire = 'Alice';
+ERROR 1046 (3D000): No database selected
+MariaDB [(none)]> COMMIT;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [(none)]> USE banque_demo;
+Database changed
+MariaDB [banque_demo]> START TRANSACTION;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [banque_demo]> 
+MariaDB [banque_demo]> UPDATE compte
+    -> SET solde = solde + 100.00
+    -> WHERE titulaire = 'Alice';
+Query OK, 1 row affected (0.029 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [banque_demo]> 
+MariaDB [banque_demo]> COMMIT;
+Query OK, 0 rows affected (0.028 sec)
+
+MariaDB [banque_demo]> START TRANSACTION;
+Query OK, 0 rows affected (0.002 sec)
+
+MariaDB [banque_demo]> SELECT * FROM compte
+    -> WHERE titulaire = 'Alice'
+    -> FOR UPDATE;
++----+-----------+--------+
+| id | titulaire | solde  |
++----+-----------+--------+
+|  1 | Alice     | 900.00 |
++----+-----------+--------+
+1 row in set (0.000 sec)
+
+MariaDB [banque_demo]> ROLLBACK;
+Query OK, 0 rows affected (0.002 sec)
+
+MariaDB [banque_demo]> UPDATE compte SET solde = solde + 10.00 WHERE titulaire = 'Alice';
+ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction
+MariaDB [banque_demo]> exit;
